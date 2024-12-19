@@ -62,40 +62,57 @@ def impute_missing_data(df):
     """
     Imputes missing data from dataset. 
     For categorical features where NA means absence of feature, fills with 'None'.
-    
+    For Garage and Basement columns, fills with 0 as it means the house has no garage or basement.
+    For LotFrontage, fills with median value from the Neighborhood it belongs to.
+    For MasVnrArea, fills with median value from the Neighborhood it belongs to.
+    For BsmtFinSF1, BsmtFinSF2, BsmtUnfSF, TotalBsmtSF, BsmtFullBath, BsmtHalfBath, fills with 0 as it means the house has no basement.
+    For Electrical, fills with 'SBrkr' which is the mode of the column.
+
     Parameters:
         df (pd.DataFrame): The DataFrame containing the data.
         
     Returns:
         pd.DataFrame: DataFrame with imputed values
     """
-    # Create a copy to avoid modifying original dataframe
     df = df.copy()
     
-    # List of categorical features where NA means absence of feature
     na_means_none = [
-        'Alley',          # No alley access
-        'BsmtQual',       # No Basement
-        'BsmtCond',       # No Basement
-        'BsmtExposure',   # No Basement
-        'BsmtFinType1',   # No Basement
-        'BsmtFinType2',   # No Basement
-        'FireplaceQu',    # No Fireplace
-        'GarageType',     # No Garage
-        'GarageFinish',   # No Garage
-        'GarageQual',     # No Garage
-        'GarageCond',     # No Garage
-        'PoolQC',         # No Pool
-        'Fence',          # No Fence
-        'MiscFeature',    # No miscellaneous feature
-        'MasVnrType'      # No masonry veneer
+        'Alley',
+        'BsmtQual',
+        'BsmtCond', 
+        'BsmtExposure',
+        'BsmtFinType1',
+        'BsmtFinType2',
+        'FireplaceQu',
+        'GarageType',
+        'GarageFinish',
+        'GarageQual',
+        'GarageCond',
+        'PoolQC',
+        'Fence',
+        'MiscFeature',
+        'MasVnrType'
     ]
     
-    # Fill NA with 'None' for these categorical features
+    
     for col in na_means_none:
         if col in df.columns:
             df[col] = df[col].fillna('None')
 
+    df['Electrical'] = df['Electrical'].fillna('SBrkr')
+
+    for col in ('GarageYrBlt', 'GarageCars', 'GarageArea'):
+        df[col] = df[col].fillna(0)
     
-    
+    df['LotFrontage'] = df.groupby('Neighborhood')['LotFrontage'].transform(lambda x: x.fillna(x.median()))
+
+    overall_median_lotfrontage = df['LotFrontage'].median()
+    df['LotFrontage'] = df['LotFrontage'].fillna(overall_median_lotfrontage)
+
+    median_masvnr = df['MasVnrArea'].median()
+    df['MasVnrArea'] = df['MasVnrArea'].fillna(median_masvnr)
+
+    for col in ('BsmtFinSF1', 'BsmtFinSF2', 'BsmtUnfSF', 'TotalBsmtSF', 'BsmtFullBath', 'BsmtHalfBath'):
+        df[col] = df[col].fillna(0)
+
     return df
