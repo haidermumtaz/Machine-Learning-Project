@@ -27,7 +27,7 @@ def plot_corr_matrix(df, targ, nr_c=None):
     if nr_c is not None:
         top_features = corr_abs.nlargest(nr_c, targ)[targ].index
         cm = df[top_features].corr()
-        title = f'Correlation Matrix - Top {nr_c} Features Correlated with {targ}'
+        title = f'Correlation Matrix - Top {nr_c -1} Features Correlated with {targ}'
         figsize = (nr_c / 1.5, nr_c / 1.5)
         annot_size = 10
         cbar_kws = {'shrink': .5}
